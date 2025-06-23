@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Upload and Run with Moving Logos</title>
+  <style>
+    /* CSS Variables for easy customization */
+    :root {
+      --bg-gradient-start: #ff7e5f;
+      --bg-gradient-end: #feb47b;
+      --primary-color: #6a11cb;
+      --secondary-color: #2575fc;
+      --form-bg: #fff;
+      --text-color: #333;
+    }
+
+    /* Global Styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to right, var(--bg-gradient-start), var(--bg-gradient-end));
+      color: var(--text-color);
+      text-align: center;
+      padding: 20px;
+    }
+
+    h2 {
+      color: #fff;
+      margin-bottom: 20px;
+    }
+
+    /* Container for Forms */
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 40px;
+      margin-bottom: 40px;
+    }
+
+    /* Form Styles */
+    form {
+      background: var(--form-bg);
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 400px;
+      transition: transform 0.3s ease;
+    }
+
+    form:hover {
+      transform: translateY(-5px);
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 10px;
+      text-align: left;
+    }
+
+    input[type="file"] {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    button {
+      background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+      color: #fff;
+      border: none;
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      width: 100%;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Moving Logos Section */
+    .logo-scroll {
+      width: 100%;
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.2);
+      padding: 20px 0;
+      margin-bottom: 20px;
+      border-radius: 10px;
+    }
+
+    .logo-track {
+      display: flex;
+      align-items: center;
+      gap: 60px;
+      /* Duplicate the content width for a seamless scroll */
+      width: calc(200%);
+      animation: scroll 20s linear infinite;
+    }
+
+    .logo-track img {
+      max-height: 50px;
+      filter: brightness(0) invert(1);
+    }
+
+    @keyframes scroll {
+      from {
+        transform: translateX(0);
+      }
+      to {
+        transform: translateX(-50%);
+      }
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 480px) {
+      form {
+        padding: 20px;
+      }
+      
+      button {
+        font-size: 14px;
+        padding: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Page Title for Upload Form -->
+  <h2>Upload Your Resume (PDF Only)</h2>
+  
+  <!-- Forms Container -->
+  <div class="container">
+    <!-- Upload Form -->
+    <form action="/upload" method="post" enctype="multipart/form-data">
+      <label for="file">Choose a PDF file:</label>
+      <input type="file" id="file" name="file" accept=".pdf" required>
+      <button type="submit">Upload</button>
+    </form>
+    
+    <!-- Run Python Script Form -->
+    <form action="/run" method="post">
+      <h2>Run Python Script</h2>
+      <button type="submit">Run</button>
+    </form>
+  </div>
+  
+  <!-- Moving Logos Section -->
+  <div class="logo-scroll">
+    <!-- Moving Logos Section -->
+<div class="logo-scroll">
+    <div class="logo-track">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Google_2015_logo.svg/800px-Google_2015_logo.svg.png" alt="Google" />
+      <img src="https://upload.wikimedia.org/wikipedia/commons/c/cf/IBM_logo.svg" alt="IBM" />
+      <img src="https://upload.wikimedia.org/wikipedia/commons/a/a6/Meta_Platforms_Inc._logo.svg" alt="Meta" />
+      <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg" alt="Microsoft" />
+      <!-- Duplicate logos for a continuous scrolling effect -->
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Google_2015_logo.svg/800px-Google_2015_logo.svg.png" alt="Google" />
+      <img src="https://upload.wikimedia.org/wikipedia/commons/c/cf/IBM_logo.svg" alt="IBM" />
+      <img src="https://upload.wikimedia.org/wikipedia/commons/a/a6/Meta_Platforms_Inc._logo.svg" alt="Meta" />
+      <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg" alt="Microsoft" />
+    </div>
+  </div>
+  
+  </div>
+</body>
+</html>
