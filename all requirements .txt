@@ -1,0 +1,19 @@
+3. Activate Your myenv Environment
+If myenv is already set up in your project directory, activate it with:
+
+powershell
+Copy code
+.\myenv\Scripts\Activate
+Once activated, you should see (myenv) appear at the start of the prompt, like this:
+
+plaintext
+Copy code
+(myenv) PS C:\Users\Vaishnavi K Trivedi\OneDrive\Desktop\Research AI>
+
+
+
+
+requqirements  
+
+pip install --upgrade pip
+pip install shap scikit-learn PyPDF2 python-docx google-generativeai pandas numpy openpyxl

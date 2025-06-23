@@ -1,0 +1,133 @@
+import os
+import warnings
+import numpy as np
+import pandas as pd
+import shap
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.linear_model import Ridge
+
+try:
+    import PyPDF2
+    import docx
+except ImportError as e:
+    raise ImportError("Missing dependencies. Install PyPDF2 and python-docx.")
+
+# Suppress Warnings
+warnings.filterwarnings("ignore")
+
+# Path to Resume Directory (Update this as needed)
+resume_dir = r"path_to_resumes"  # Replace with your resumes folder path
+
+# Job Description
+jd_text = """
+We are looking for a Software Engineer with experience in Python, machine learning, and data analysis.
+The candidate should be proficient in developing scalable applications, have a strong understanding of algorithms,
+and possess excellent problem-solving skills. Familiarity with cloud platforms such as AWS or Azure is a plus.
+"""
+
+# Function to Read Resumes
+def read_resume_file(filepath):
+    ext = os.path.splitext(filepath)[1].lower()
+    text = ""
+    try:
+        if ext == ".pdf":
+            with open(filepath, "rb") as f:
+                reader = PyPDF2.PdfReader(f)
+                for page in reader.pages:
+                    text += page.extract_text() + "\n"
+        elif ext == ".docx":
+            doc = docx.Document(filepath)
+            for para in doc.paragraphs:
+                text += para.text + "\n"
+        elif ext == ".txt":
+            with open(filepath, "r", encoding="utf-8") as f:
+                text = f.read()
+    except Exception as e:
+        print(f"Error reading {filepath}: {e}")
+    return text.strip()
+
+# Load Resumes
+resumes = {}
+for file in os.listdir(resume_dir):
+    filepath = os.path.join(resume_dir, file)
+    if os.path.isfile(filepath) and file.lower().endswith((".pdf", ".docx", ".txt")):
+        content = read_resume_file(filepath)
+        if content:
+            resumes[file] = content
+
+if not resumes:
+    raise ValueError("No resumes found. Please check your folder and files.")
+
+# Combine JD and Resumes
+documents = [jd_text] + list(resumes.values())
+
+# TF-IDF Vectorization
+vectorizer = TfidfVectorizer(stop_words='english', max_features=300)
+tfidf_matrix = vectorizer.fit_transform(documents)
+jd_vector = tfidf_matrix[0]
+resume_vectors = tfidf_matrix[1:]
+
+# Calculate Similarity
+similarities = cosine_similarity(resume_vectors, jd_vector).flatten()
+ranking_df = pd.DataFrame({
+    'Resume': list(resumes.keys()),
+    'Similarity_Score': similarities
+})
+ranking_df = ranking_df.sort_values(by='Similarity_Score', ascending=False).reset_index(drop=True)
+ranking_df['Rank'] = ranking_df.index + 1
+
+# SHAP Explanation Setup
+def predict_similarity(x):
+    return cosine_similarity(x, jd_vector).flatten()
+
+explainer = shap.KernelExplainer(predict_similarity, tfidf_matrix[0:1], model_regressor=Ridge(alpha=1.0))
+shap_values = explainer.shap_values(resume_vectors, nsamples=100)
+feature_names = vectorizer.get_feature_names_out()
+
+# Generate HR Remarks and Improvement Suggestions
+def generate_remarks_and_suggestions(resume_name, rank, score, shap_contributions):
+    pos_feats = {k: v for k, v in shap_contributions.items() if v > 0}
+    neg_feats = {k: v for k, v in shap_contributions.items() if v < 0}
+    remarks = f"Resume {resume_name} ranked #{rank} with a similarity score of {score:.2f}. "
+    remarks += "The candidate excels in " + ", ".join(pos_feats.keys()) if pos_feats else ""
+    suggestions = "Consider improving on: " + ", ".join(neg_feats.keys()) if neg_feats else ""
+    return remarks, suggestions
+
+hr_table_data = []
+applicant_table_data = []
+
+for idx, row in ranking_df.iterrows():
+    resume_name = row['Resume']
+    rank = row['Rank']
+    score = row['Similarity_Score']
+    shap_val = shap_values[idx]
+    shap_contrib = dict(zip(feature_names, shap_val))
+
+    hr_remarks, suggestions = generate_remarks_and_suggestions(resume_name, rank, score, shap_contrib)
+
+    hr_table_data.append({
+        "Resume": resume_name,
+        "Rank": rank,
+        "Similarity Score": f"{score:.2f}",
+        "HR Remarks": hr_remarks
+    })
+
+    applicant_table_data.append({
+        "Resume": resume_name,
+        "Improvement Suggestions": suggestions
+    })
+
+# Create DataFrames
+hr_table = pd.DataFrame(hr_table_data)
+applicant_table = pd.DataFrame(applicant_table_data)
+
+# Save to CSV
+hr_table.to_csv("hr_table.csv", index=False, encoding="utf-8-sig")
+applicant_table.to_csv("applicant_table.csv", index=False, encoding="utf-8-sig")
+
+# Display Results
+print("HR Table:")
+print(hr_table)
+print("\nApplicant Suggestions:")
+print(applicant_table)
